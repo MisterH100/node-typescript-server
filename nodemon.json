@@ -1,0 +1,6 @@
+{
+    "watch":["src","build"],
+    "ext": ".ts,.html",
+    "ignore":[],
+    "exec":"npx tsc & node build/server.js"
+}
