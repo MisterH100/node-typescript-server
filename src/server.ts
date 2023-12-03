@@ -9,7 +9,7 @@ const invoicesRoute = require("./routes/invoicesRoute");
 const downloadFiles = require("./routes/downloadFiles");
 
 const homeRoute = router.get("/",(req,res)=>{
-    res.send("welcome to c and c data server");
+    res.send("welcome to candc data server");
 })
 
 app.use(express.json());

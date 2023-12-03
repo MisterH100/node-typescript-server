@@ -13,7 +13,7 @@ var qoutesRoute = require("./routes/qoutesRoute");
 var invoicesRoute = require("./routes/invoicesRoute");
 var downloadFiles = require("./routes/downloadFiles");
 var homeRoute = router.get("/", function (req, res) {
-    res.send("welcome to c and c data server");
+    res.send("welcome to candc data server");
 });
 app.use(express_1.default.json());
 app.use(cors());

@@ -114,4 +114,18 @@ router.get("/invoice/date/:date", function (req, res) {
         res.send(error);
     }
 });
+router.delete("/invoice/delete/:number", function (req, res) {
+    var invoice_number = req.params.number;
+    try {
+        var file = fs_1.default.readFileSync("data/qouteData.json", "utf-8");
+        var data = JSON.parse(file);
+        var remainingInvoices = data.filter(function (d) { return d.invoice_number != invoice_number; });
+        var newData = JSON.stringify(remainingInvoices);
+        fs_1.default.writeFileSync("data/qouteData.json", newData, "utf-8");
+        res.send("deleted");
+    }
+    catch (error) {
+        res.send(error);
+    }
+});
 module.exports = router;

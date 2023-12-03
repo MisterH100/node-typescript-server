@@ -7,7 +7,7 @@ router.get("/qoutes/data/download", (req,res)=>{
     res.download(file);
 })
 
-router.get("invoices/data/download", (req,res)=>{
+router.get("/invoices/data/download", (req,res)=>{
     const file = "data/invoiceData.json";
     res.download(file);
 })

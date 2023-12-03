@@ -6,7 +6,7 @@ router.get("/qoutes/data/download", function (req, res) {
     var file = "data/qouteData.json";
     res.download(file);
 });
-router.get("invoices/data/download", function (req, res) {
+router.get("/invoices/data/download", function (req, res) {
     var file = "data/invoiceData.json";
     res.download(file);
 });

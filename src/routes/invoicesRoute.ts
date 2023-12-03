@@ -120,5 +120,19 @@ router.get("/invoice/date/:date", (req,res)=>{
     }
 })
 
+router.delete("/invoice/delete/:number",(req,res)=>{
+    const invoice_number = req.params.number;
+    try {
+        const file = fs.readFileSync("data/qouteData.json","utf-8");
+        const data = JSON.parse(file);
+        const remainingInvoices = data.filter((d:any)=> d.invoice_number != invoice_number);
+        const newData = JSON.stringify(remainingInvoices);
+        fs.writeFileSync("data/qouteData.json",newData,"utf-8");
+        res.send("deleted");
+    } catch (error) {
+        res.send(error)
+    }
+})
+
 
 module.exports = router;

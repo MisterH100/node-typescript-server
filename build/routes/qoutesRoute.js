@@ -114,4 +114,18 @@ router.get("/qoute/date/:date", function (req, res) {
         res.send(error);
     }
 });
+router.delete("/qoute/delete/:number", function (req, res) {
+    var qoute_number = req.params.number;
+    try {
+        var file = fs_1.default.readFileSync("data/qouteData.json", "utf-8");
+        var data = JSON.parse(file);
+        var remainingQoutes = data.filter(function (d) { return d.qoute_number != qoute_number; });
+        var newData = JSON.stringify(remainingQoutes);
+        fs_1.default.writeFileSync("data/qouteData.json", newData, "utf-8");
+        res.send("deleted");
+    }
+    catch (error) {
+        res.send(error);
+    }
+});
 module.exports = router;

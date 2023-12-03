@@ -120,5 +120,19 @@ router.get("/qoute/date/:date", (req,res)=>{
     }
 })
 
+router.delete("/qoute/delete/:number",(req,res)=>{
+    const qoute_number = req.params.number;
+    try {
+        const file = fs.readFileSync("data/qouteData.json","utf-8");
+        const data = JSON.parse(file);
+        const remainingQoutes = data.filter((d:any)=> d.qoute_number != qoute_number);
+        const newData = JSON.stringify(remainingQoutes);
+        fs.writeFileSync("data/qouteData.json",newData,"utf-8");
+        res.send("deleted");
+    } catch (error) {
+        res.send(error)
+    }
+})
+
 
 module.exports = router;
