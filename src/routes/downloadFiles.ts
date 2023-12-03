@@ -2,7 +2,7 @@ import { Router } from 'express';
 const router = Router();
 
 
-router.get("/qoute/data/download", (req,res)=>{
+router.get("/qoutes/data/download", (req,res)=>{
     const file = "data/qouteData.json";
     res.download(file);
 })

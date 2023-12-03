@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var express_1 = require("express");
 var router = (0, express_1.Router)();
-router.get("/qoute/data/download", function (req, res) {
+router.get("/qoutes/data/download", function (req, res) {
     var file = "data/qouteData.json";
     res.download(file);
 });
