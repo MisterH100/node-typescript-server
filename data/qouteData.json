@@ -1,0 +1,34 @@
+[
+  {
+    "id": "0be6a942-b6d7-48f5-91a3-8811656edbd1",
+    "name": "",
+    "address": "",
+    "qoute_number": 1175,
+    "qoute_file": "http://localhost:8000/qoute/file/C&CBALUSTRADENamenotprovided.pdf",
+    "date": 1701624343393
+  },
+  {
+    "id": "2f509ece-db0b-4c25-8f21-2b78a8966c1c",
+    "name": "",
+    "address": "",
+    "qoute_number": 1175,
+    "qoute_file": "http://localhost:8000/qoute/file/C&CBALUSTRADENamenotprovided2.pdf",
+    "date": 1701624389109
+  },
+  {
+    "id": "90d9c0ee-01ad-42fa-b1c9-e36183a866cc",
+    "name": "Mpho",
+    "address": "",
+    "qoute_number": 1176,
+    "qoute_file": "http://localhost:8000/qoute/file/C&CBALUSTRADEMpho2.pdf",
+    "date": 1701624461529
+  },
+  {
+    "id": "9a94dcef-fab4-493f-b9c2-1805b19bf1c8",
+    "name": "Mr Mabena",
+    "address": "9 Diamond Road Pebble Rock",
+    "qoute_number": 1149,
+    "qoute_file": "http://localhost:8000/qoute/file/C&CBALUSTRADEINVOICEMrMabena.pdf",
+    "date": 1701624543101
+  }
+]
