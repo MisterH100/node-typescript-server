@@ -1,8 +1,9 @@
 import { Router } from 'express';
 import fs from 'fs';
-const { v4: uuidv4 } = require('uuid');
 const multer  = require('multer');
+const { v4: uuidv4 } = require('uuid');
 const router = Router();
+const Qoute = require('../models/qoutes');
 
 const storage = multer.diskStorage({
     destination: (req: any, file: any, cb:any) =>{
@@ -18,7 +19,7 @@ const storage = multer.diskStorage({
   
 const upload = multer({ storage })
 
-router.post("/create_new_qoute",upload.single("qouteFile"),(req,res)=>{
+router.post("/create_new_qoute",upload.single("qouteFile"),async (req,res)=>{
     const qoute_file = req.file;
     const url = req.protocol + '://' + req.get('host');
     const {name,address,qoute_number} =  req.body;
@@ -34,20 +35,14 @@ router.post("/create_new_qoute",upload.single("qouteFile"),(req,res)=>{
         }
     }
     try {
-        
-        const file = fs.readFileSync("data/qouteData.json","utf-8");
-        const data = JSON.parse(file);
-        const qouteData = {
-            id: uuidv4(),
+        const newQoute = new Qoute({
             name:name,
             address:address,
             qoute_number: toNumber(qoute_number),
             qoute_file: url+"/qoute/file/"+cleanString(qoute_file?.originalname),
             date: Date.now()
-        }
-        data.push(qouteData);
-        const newData = JSON.stringify(data);
-        fs.writeFileSync("data/qouteData.json",newData,"utf-8");
+        })
+        await newQoute.save()
         res.send("succsess");
     } catch (error) {
         res.send(error)
@@ -59,76 +54,74 @@ router.get("/qoute/file/:file_name",(req,res)=>{
     const file = req.params.file_name;
     try {  
         const qouteFile = `qoutes/${file}`;
-        res.download(qouteFile);
+        res.send(qouteFile);
     } catch (error) {
         res.send(error)
     }
 })
 
-router.get("/qoutes",(req,res)=>{
+router.get("/qoutes",async(req,res)=>{
     try {   
-        const quoteDetails = fs.readFileSync("data/qouteData.json","utf-8");
-        const data = JSON.parse(quoteDetails);
-        res.send(data)
+        await Qoute.find().sort({date: "descending"})
+        .then((qoutes:[]) => {
+            res.send(qoutes);
+        });
     } catch (error) {
         res.send(error)
     }
 })
 
 
-router.get("/qoute/number/:qoute_number", (req,res)=>{
+router.get("/qoute/number/:qoute_number", async(req,res)=>{
     const qoute_number = req.params.qoute_number;
     try {      
-        const file = fs.readFileSync("data/qouteData.json","utf-8");
-        const data = JSON.parse(file);
-    
-        const thisQoute = data.find((d:any)=>d.qoute_number == qoute_number);
-        res.send(thisQoute);
+        await Qoute.find({qoute_number:qoute_number})
+        .then((qoute:{})=>{
+            res.send(qoute)
+        })
 
     } catch (error) {
         res.send(error)
     }
 })
 
-router.get("/qoute/name/:name", (req,res)=>{
+router.get("/qoute/name/:name", async(req,res)=>{
     const name = req.params.name;
     const cleanString = (str:string) =>{
         return str.replace(/\s+/g, '');
     }
 
     try {      
-        const file = fs.readFileSync("data/qouteData.json","utf-8");
-        const data = JSON.parse(file);
-        const thisQoute = data.find((d:any)=>cleanString(d.name) == cleanString(name));
-        res.send(thisQoute);
+        await Qoute.find({name:{$regex:cleanString(name)}})
+        .then((qoute:{})=>{
+            res.send(qoute)
+        })
 
     } catch (error) {
         res.send(error)
     }
 })
 
-router.get("/qoute/date/:date", (req,res)=>{
+router.get("/qoute/date/:date", async(req,res)=>{
     const date = req.params.date;
     try {      
-        const file = fs.readFileSync("data/qouteData.json","utf-8");
-        const data = JSON.parse(file);
-        const thisQoute = data.find((d:any)=> new Date(d.date) >=  new Date(date));
-        res.send({thisQoute});
+        await Qoute.find({date:{$gt:new Date(date)}})
+        .then((qoute:{})=>{
+            res.send(qoute)
+        })
 
     } catch (error) {
         res.send(error)
     }
 })
 
-router.delete("/qoute/delete/:number",(req,res)=>{
+router.delete("/qoute/delete/:number",async(req,res)=>{
     const qoute_number = req.params.number;
     try {
-        const file = fs.readFileSync("data/qouteData.json","utf-8");
-        const data = JSON.parse(file);
-        const remainingQoutes = data.filter((d:any)=> d.qoute_number != qoute_number);
-        const newData = JSON.stringify(remainingQoutes);
-        fs.writeFileSync("data/qouteData.json",newData,"utf-8");
-        res.send("deleted");
+        await Qoute.deleteOne({qoute_number:qoute_number})
+        .then(()=>{
+            res.send("deleted");
+        })
     } catch (error) {
         res.send(error)
     }

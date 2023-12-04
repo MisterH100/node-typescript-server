@@ -1,8 +1,8 @@
 import { Router } from 'express';
-import fs from 'fs';
 const { v4: uuidv4 } = require('uuid');
 const multer  = require('multer');
 const router = Router();
+const Invoice = require("../models/invoices");
 
 const storage = multer.diskStorage({
     destination: (req: any, file: any, cb:any) =>{
@@ -18,7 +18,7 @@ const storage = multer.diskStorage({
   
 const upload = multer({ storage })
 
-router.post("/create_new_invoice",upload.single("invoiceFile"),(req,res)=>{
+router.post("/create_new_invoice",upload.single("invoiceFile"),async(req,res)=>{
     const invoice_file = req.file;
     const url = req.protocol + '://' + req.get('host');
     const {name,address,invoice_number} =  req.body;
@@ -35,19 +35,15 @@ router.post("/create_new_invoice",upload.single("invoiceFile"),(req,res)=>{
     }
     try {
         
-        const file = fs.readFileSync("data/invoiceData.json","utf-8");
-        const data = JSON.parse(file);
-        const invoiceData = {
+        const newInvoice = new Invoice({
             id: uuidv4(),
             name:name,
             address:address,
             invoice_number:toNumber(invoice_number),
             invoice_file: url+"/invoice/file/"+cleanString(invoice_file?.originalname),
             date: Date.now()
-        }
-        data.push(invoiceData);
-        const newData = JSON.stringify(data);
-        fs.writeFileSync("data/invoiceData.json",newData,"utf-8");
+        });
+        await newInvoice.save();
         res.send("succsess");
     } catch (error) {
         res.send(error)
@@ -59,76 +55,73 @@ router.get("/invoice/file/:file_name",(req,res)=>{
     const file = req.params.file_name;
     try {  
         const invoiceFile = `invoices/${file}`;
-        res.download(invoiceFile);
+        res.send(invoiceFile);
+        
     } catch (error) {
         res.send(error)
     }
 })
 
-router.get("/invoices",(req,res)=>{
+router.get("/invoices",async (req,res)=>{
     try {   
-        const invoiceDetails = fs.readFileSync("data/invoiceData.json","utf-8");
-        const data = JSON.parse(invoiceDetails);
-        res.send(data)
+        await Invoice.find().sort({date: "descending"})
+        .then((invoices:[]) => {
+            res.send(invoices);
+        });
     } catch (error) {
         res.send(error)
     }
 })
 
 
-router.get("/invoice/number/:invoice_number", (req,res)=>{
+router.get("/invoice/number/:invoice_number", async(req,res)=>{
     const invoice_number = req.params.invoice_number;
     try {      
-        const file = fs.readFileSync("data/invoiceData.json","utf-8");
-        const data = JSON.parse(file);
-    
-        const thisInvoice = data.find((d:any)=>d.invoice_number == invoice_number);
-        res.send(thisInvoice);
-
+        await Invoice.find({invoice_number:invoice_number})
+        .then((invoice:{})=>{
+            res.send(invoice)
+        })
     } catch (error) {
         res.send(error)
     }
 })
 
-router.get("/invoice/name/:name", (req,res)=>{
+router.get("/invoice/name/:name", async(req,res)=>{
     const name = req.params.name;
     const cleanString = (str:string) =>{
         return str.replace(/\s+/g, '');
     }
 
     try {      
-        const file = fs.readFileSync("data/invoiceData.json","utf-8");
-        const data = JSON.parse(file);
-        const thisInvoice = data.find((d:any)=>cleanString(d.name) == cleanString(name));
-        res.send(thisInvoice);
-
+        await Invoice.find({name:{$regex:cleanString(name)}})
+        .then((invoice:{})=>{
+            res.send(invoice)
+        })
     } catch (error) {
         res.send(error)
     }
 })
 
-router.get("/invoice/date/:date", (req,res)=>{
+router.get("/invoice/date/:date", async(req,res)=>{
     const date = req.params.date;
     try {      
-        const file = fs.readFileSync("data/invoiceData.json","utf-8");
-        const data = JSON.parse(file);
-        const thisInvoice = data.find((d:any)=> new Date(d.date) >=  new Date(date));
-        res.send({thisInvoice});
+        await Invoice.find({date:{$gt:new Date(date)}})
+        .then((invoice:{})=>{
+            res.send(invoice)
+        })
 
     } catch (error) {
         res.send(error)
     }
 })
 
-router.delete("/invoice/delete/:number",(req,res)=>{
+router.delete("/invoice/delete/:number",async(req,res)=>{
     const invoice_number = req.params.number;
     try {
-        const file = fs.readFileSync("data/qouteData.json","utf-8");
-        const data = JSON.parse(file);
-        const remainingInvoices = data.filter((d:any)=> d.invoice_number != invoice_number);
-        const newData = JSON.stringify(remainingInvoices);
-        fs.writeFileSync("data/qouteData.json",newData,"utf-8");
-        res.send("deleted");
+        await Invoice.deleteOne({invoice_number:invoice_number})
+        .then(()=>{
+            res.send("deleted");
+        })
     } catch (error) {
         res.send(error)
     }
