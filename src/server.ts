@@ -32,6 +32,6 @@ app.use(qoutesRoute);
 app.use(invoicesRoute);
 app.use(downloadFiles);
 
-app.listen(process.env.PORT,()=>{
+app.listen(process.env.PORT || 3000,()=>{
     console.log("listening on port 8080");
 })
