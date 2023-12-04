@@ -99,7 +99,7 @@ router.get("/qoute/file/:file_name", function (req, res) {
     var file = req.params.file_name;
     try {
         var qouteFile = "qoutes/".concat(file);
-        res.download(qouteFile);
+        res.send(qouteFile);
     }
     catch (error) {
         res.send(error);
