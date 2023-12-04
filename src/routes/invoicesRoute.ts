@@ -55,7 +55,7 @@ router.get("/invoice/file/:file_name",(req,res)=>{
     const file = req.params.file_name;
     try {  
         const invoiceFile = `invoices/${file}`;
-        res.send(invoiceFile);
+        res.download(invoiceFile);
         
     } catch (error) {
         res.send(error)

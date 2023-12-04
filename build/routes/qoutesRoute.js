@@ -76,6 +76,7 @@ router.post("/create_new_qoute", upload.single("qouteFile"), function (req, res)
             case 1:
                 _b.trys.push([1, 3, , 4]);
                 newQoute = new Qoute({
+                    id: uuidv4(),
                     name: name,
                     address: address,
                     qoute_number: toNumber(qoute_number),
@@ -99,7 +100,7 @@ router.get("/qoute/file/:file_name", function (req, res) {
     var file = req.params.file_name;
     try {
         var qouteFile = "qoutes/".concat(file);
-        res.send(qouteFile);
+        res.download(qouteFile);
     }
     catch (error) {
         res.send(error);

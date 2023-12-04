@@ -100,7 +100,7 @@ router.get("/invoice/file/:file_name", function (req, res) {
     var file = req.params.file_name;
     try {
         var invoiceFile = "invoices/".concat(file);
-        res.send(invoiceFile);
+        res.download(invoiceFile);
     }
     catch (error) {
         res.send(error);

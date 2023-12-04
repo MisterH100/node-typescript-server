@@ -36,6 +36,7 @@ router.post("/create_new_qoute",upload.single("qouteFile"),async (req,res)=>{
     }
     try {
         const newQoute = new Qoute({
+            id:uuidv4(),
             name:name,
             address:address,
             qoute_number: toNumber(qoute_number),
@@ -54,7 +55,7 @@ router.get("/qoute/file/:file_name",(req,res)=>{
     const file = req.params.file_name;
     try {  
         const qouteFile = `qoutes/${file}`;
-        res.send(qouteFile);
+        res.download(qouteFile);
     } catch (error) {
         res.send(error)
     }
