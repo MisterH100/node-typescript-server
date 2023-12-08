@@ -1,23 +1,31 @@
 import { Router } from 'express';
 const { v4: uuidv4 } = require('uuid');
 const multer  = require('multer');
+const { GridFsStorage } = require("multer-gridfs-storage");
+const url = process.env.MONGO_STRING;
+const MongoClient = require("mongodb").MongoClient;
+const GridFSBucket = require("mongodb").GridFSBucket;
+const mongoClient = new MongoClient(url);
 const router = Router();
 const Invoice = require("../models/invoices");
 
-const storage = multer.diskStorage({
-    destination: (req: any, file: any, cb:any) =>{
-      cb(null, 'invoices')
-    },
-    filename: (req:any, file:any, cb:any)=> {
+const storage = new GridFsStorage({
+    url,file: (req:any, file:any) => {
         const cleanString = (str:string) =>{
             return str.replace(/\s+/g, '');
         }
-        cb(null, cleanString(file.originalname))
-    }
+      if (file.mimetype === "application/pdf") {
+        return {
+          bucketName: "invoices",
+          filename: cleanString(file.originalname),
+        }
+      } else {
+        return cleanString(file.originalname)
+      }
+    },
 })
-  
 const upload = multer({ storage })
-
+  
 router.post("/create_new_invoice",upload.single("invoiceFile"),async(req,res)=>{
     const invoice_file = req.file;
     const url = req.protocol + '://' + req.get('host');
@@ -51,16 +59,38 @@ router.post("/create_new_invoice",upload.single("invoiceFile"),async(req,res)=>{
 
 })
 
-router.get("/invoice/file/:file_name",(req,res)=>{
-    const file = req.params.file_name;
-    try {  
-        const invoiceFile = `invoices/${file}`;
-        res.download(invoiceFile);
-        
-    } catch (error) {
-        res.send(error)
+router.get("/invoice/file/:filename", async(req,res) =>{
+    const filename = req.params.filename;
+    try {
+        await mongoClient.connect()
+        const database = mongoClient.db("test")
+        const imageBucket = new GridFSBucket(database, {
+            bucketName: "qoutes",
+        })
+
+        let downloadStream = imageBucket.openDownloadStreamByName(
+            filename
+        )
+        downloadStream.on("data", (data:any) => {
+            return res.status(200).write(data)
+        })
+
+        downloadStream.on("error",(data:any) => {
+            return res.status(404).send({ error: "pdf not found" })
+        })
+
+        downloadStream.on("end", () => {
+            return res.end()
+        })
+        } catch (error) {
+        console.log(error)
+        res.status(500).send({
+            message: "Error Something went wrong",
+            error,
+        })
     }
-})
+    
+});
 
 router.get("/invoices",async (req,res)=>{
     try {   

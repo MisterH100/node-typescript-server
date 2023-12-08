@@ -38,19 +38,30 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var express_1 = require("express");
 var multer = require('multer');
+var GridFsStorage = require("multer-gridfs-storage").GridFsStorage;
+var url = process.env.MONGO_STRING;
+var MongoClient = require("mongodb").MongoClient;
+var GridFSBucket = require("mongodb").GridFSBucket;
+var mongoClient = new MongoClient(url);
 var uuidv4 = require('uuid').v4;
 var router = (0, express_1.Router)();
 var Qoute = require('../models/qoutes');
-var storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, 'qoutes');
-    },
-    filename: function (req, file, cb) {
+var storage = new GridFsStorage({
+    url: url,
+    file: function (req, file) {
         var cleanString = function (str) {
             return str.replace(/\s+/g, '');
         };
-        cb(null, cleanString(file.originalname));
-    }
+        if (file.mimetype === "application/pdf") {
+            return {
+                bucketName: "qoutes",
+                filename: cleanString(file.originalname),
+            };
+        }
+        else {
+            return cleanString(file.originalname);
+        }
+    },
 });
 var upload = multer({ storage: storage });
 router.post("/create_new_qoute", upload.single("qouteFile"), function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
@@ -96,18 +107,47 @@ router.post("/create_new_qoute", upload.single("qouteFile"), function (req, res)
         }
     });
 }); });
-router.get("/qoute/file/:file_name", function (req, res) {
-    var file = req.params.file_name;
-    try {
-        var qouteFile = "qoutes/".concat(file);
-        res.download(qouteFile);
-    }
-    catch (error) {
-        res.send(error);
-    }
-});
+router.get("/qoute/file/:filename", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+    var filename, database, imageBucket, downloadStream, error_2;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                filename = req.params.filename;
+                _a.label = 1;
+            case 1:
+                _a.trys.push([1, 3, , 4]);
+                return [4 /*yield*/, mongoClient.connect()];
+            case 2:
+                _a.sent();
+                database = mongoClient.db("test");
+                imageBucket = new GridFSBucket(database, {
+                    bucketName: "qoutes",
+                });
+                downloadStream = imageBucket.openDownloadStreamByName(filename);
+                downloadStream.on("data", function (data) {
+                    return res.status(200).write(data);
+                });
+                downloadStream.on("error", function (data) {
+                    return res.status(404).send({ error: "pdf not found" });
+                });
+                downloadStream.on("end", function () {
+                    return res.end();
+                });
+                return [3 /*break*/, 4];
+            case 3:
+                error_2 = _a.sent();
+                console.log(error_2);
+                res.status(500).send({
+                    message: "Error Something went wrong",
+                    error: error_2,
+                });
+                return [3 /*break*/, 4];
+            case 4: return [2 /*return*/];
+        }
+    });
+}); });
 router.get("/qoutes", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var error_2;
+    var error_3;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -120,15 +160,15 @@ router.get("/qoutes", function (req, res) { return __awaiter(void 0, void 0, voi
                 _a.sent();
                 return [3 /*break*/, 3];
             case 2:
-                error_2 = _a.sent();
-                res.send(error_2);
+                error_3 = _a.sent();
+                res.send(error_3);
                 return [3 /*break*/, 3];
             case 3: return [2 /*return*/];
         }
     });
 }); });
 router.get("/qoute/number/:qoute_number", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var qoute_number, error_3;
+    var qoute_number, error_4;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -144,15 +184,15 @@ router.get("/qoute/number/:qoute_number", function (req, res) { return __awaiter
                 _a.sent();
                 return [3 /*break*/, 4];
             case 3:
-                error_3 = _a.sent();
-                res.send(error_3);
+                error_4 = _a.sent();
+                res.send(error_4);
                 return [3 /*break*/, 4];
             case 4: return [2 /*return*/];
         }
     });
 }); });
 router.get("/qoute/name/:name", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var name, cleanString, error_4;
+    var name, cleanString, error_5;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -171,15 +211,15 @@ router.get("/qoute/name/:name", function (req, res) { return __awaiter(void 0, v
                 _a.sent();
                 return [3 /*break*/, 4];
             case 3:
-                error_4 = _a.sent();
-                res.send(error_4);
+                error_5 = _a.sent();
+                res.send(error_5);
                 return [3 /*break*/, 4];
             case 4: return [2 /*return*/];
         }
     });
 }); });
 router.get("/qoute/date/:date", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var date, error_5;
+    var date, error_6;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -195,15 +235,15 @@ router.get("/qoute/date/:date", function (req, res) { return __awaiter(void 0, v
                 _a.sent();
                 return [3 /*break*/, 4];
             case 3:
-                error_5 = _a.sent();
-                res.send(error_5);
+                error_6 = _a.sent();
+                res.send(error_6);
                 return [3 /*break*/, 4];
             case 4: return [2 /*return*/];
         }
     });
 }); });
 router.delete("/qoute/delete/:number", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var qoute_number, error_6;
+    var qoute_number, error_7;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -219,8 +259,8 @@ router.delete("/qoute/delete/:number", function (req, res) { return __awaiter(vo
                 _a.sent();
                 return [3 /*break*/, 4];
             case 3:
-                error_6 = _a.sent();
-                res.send(error_6);
+                error_7 = _a.sent();
+                res.send(error_7);
                 return [3 /*break*/, 4];
             case 4: return [2 /*return*/];
         }

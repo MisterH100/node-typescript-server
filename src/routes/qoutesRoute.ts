@@ -1,22 +1,30 @@
-import { Router } from 'express';
-import fs from 'fs';
+import { Router} from 'express';
 const multer  = require('multer');
+const { GridFsStorage } = require("multer-gridfs-storage");
+const url = process.env.MONGO_STRING;
+const MongoClient = require("mongodb").MongoClient;
+const GridFSBucket = require("mongodb").GridFSBucket;
+const mongoClient = new MongoClient(url);
 const { v4: uuidv4 } = require('uuid');
 const router = Router();
 const Qoute = require('../models/qoutes');
 
-const storage = multer.diskStorage({
-    destination: (req: any, file: any, cb:any) =>{
-      cb(null, 'qoutes')
-    },
-    filename: (req:any, file:any, cb:any)=> {
+
+const storage = new GridFsStorage({
+    url,file: (req:any, file:any) => {
         const cleanString = (str:string) =>{
             return str.replace(/\s+/g, '');
         }
-      cb(null, cleanString(file.originalname))
-    }
-})
-  
+      if (file.mimetype === "application/pdf") {
+        return {
+          bucketName: "qoutes",
+          filename: cleanString(file.originalname),
+        }
+      } else {
+        return cleanString(file.originalname)
+      }
+    },
+  })
 const upload = multer({ storage })
 
 router.post("/create_new_qoute",upload.single("qouteFile"),async (req,res)=>{
@@ -51,15 +59,38 @@ router.post("/create_new_qoute",upload.single("qouteFile"),async (req,res)=>{
 
 })
 
-router.get("/qoute/file/:file_name",(req,res)=>{
-    const file = req.params.file_name;
-    try {  
-        const qouteFile = `qoutes/${file}`;
-        res.download(qouteFile);
-    } catch (error) {
-        res.send(error)
-    }
-})
+router.get("/qoute/file/:filename", async(req,res) =>{
+    const filename = req.params.filename;
+    try {
+        await mongoClient.connect()
+        const database = mongoClient.db("test")
+        const imageBucket = new GridFSBucket(database, {
+          bucketName: "qoutes",
+        })
+    
+        let downloadStream = imageBucket.openDownloadStreamByName(
+          filename
+        )
+        downloadStream.on("data", (data:any) => {
+          return res.status(200).write(data)
+        })
+    
+        downloadStream.on("error",(data:any) => {
+          return res.status(404).send({ error: "pdf not found" })
+        })
+    
+        downloadStream.on("end", () => {
+          return res.end()
+        })
+      } catch (error) {
+        console.log(error)
+        res.status(500).send({
+          message: "Error Something went wrong",
+          error,
+        })
+      }
+    
+});
 
 router.get("/qoutes",async(req,res)=>{
     try {   
