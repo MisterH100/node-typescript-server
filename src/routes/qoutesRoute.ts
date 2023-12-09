@@ -21,7 +21,10 @@ const storage = new GridFsStorage({
           filename: cleanString(file.originalname),
         }
       } else {
-        return cleanString(file.originalname)
+        return {
+            bucketName: "qoutes",
+            filename: cleanString(file.originalname), 
+        }
       }
     },
   })
@@ -104,10 +107,10 @@ router.get("/qoutes",async(req,res)=>{
 })
 
 
-router.get("/qoute/number/:qoute_number", async(req,res)=>{
-    const qoute_number = req.params.qoute_number;
+router.get("/qoute/:id", async(req,res)=>{
+    const qoute_id = req.params.id;
     try {      
-        await Qoute.find({qoute_number:qoute_number})
+        await Qoute.findById(qoute_id)
         .then((qoute:{})=>{
             res.send(qoute)
         })

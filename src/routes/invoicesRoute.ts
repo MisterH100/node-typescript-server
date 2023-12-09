@@ -20,7 +20,10 @@ const storage = new GridFsStorage({
           filename: cleanString(file.originalname),
         }
       } else {
-        return cleanString(file.originalname)
+        return {
+            bucketName: "invoices",
+            filename: cleanString(file.originalname),
+        }
       }
     },
 })
@@ -104,10 +107,10 @@ router.get("/invoices",async (req,res)=>{
 })
 
 
-router.get("/invoice/number/:invoice_number", async(req,res)=>{
-    const invoice_number = req.params.invoice_number;
+router.get("/invoice/:id", async(req,res)=>{
+    const invoice_id = req.params.id;
     try {      
-        await Invoice.find({invoice_number:invoice_number})
+        await Invoice.findById(invoice_id)
         .then((invoice:{})=>{
             res.send(invoice)
         })
