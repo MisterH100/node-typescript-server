@@ -59,7 +59,10 @@ var storage = new GridFsStorage({
             };
         }
         else {
-            return cleanString(file.originalname);
+            return {
+                bucketName: "invoices",
+                filename: cleanString(file.originalname),
+            };
         }
     },
 });
@@ -167,16 +170,16 @@ router.get("/invoices", function (req, res) { return __awaiter(void 0, void 0, v
         }
     });
 }); });
-router.get("/invoice/number/:invoice_number", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var invoice_number, error_4;
+router.get("/invoice/:id", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+    var invoice_id, error_4;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
-                invoice_number = req.params.invoice_number;
+                invoice_id = req.params.id;
                 _a.label = 1;
             case 1:
                 _a.trys.push([1, 3, , 4]);
-                return [4 /*yield*/, Invoice.find({ invoice_number: invoice_number })
+                return [4 /*yield*/, Invoice.findById(invoice_id)
                         .then(function (invoice) {
                         res.send(invoice);
                     })];

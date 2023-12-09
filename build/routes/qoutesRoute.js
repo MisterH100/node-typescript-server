@@ -59,7 +59,10 @@ var storage = new GridFsStorage({
             };
         }
         else {
-            return cleanString(file.originalname);
+            return {
+                bucketName: "qoutes",
+                filename: cleanString(file.originalname),
+            };
         }
     },
 });
@@ -167,16 +170,16 @@ router.get("/qoutes", function (req, res) { return __awaiter(void 0, void 0, voi
         }
     });
 }); });
-router.get("/qoute/number/:qoute_number", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var qoute_number, error_4;
+router.get("/qoute/:id", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+    var qoute_id, error_4;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
-                qoute_number = req.params.qoute_number;
+                qoute_id = req.params.id;
                 _a.label = 1;
             case 1:
                 _a.trys.push([1, 3, , 4]);
-                return [4 /*yield*/, Qoute.find({ qoute_number: qoute_number })
+                return [4 /*yield*/, Qoute.findById(qoute_id)
                         .then(function (qoute) {
                         res.send(qoute);
                     })];
