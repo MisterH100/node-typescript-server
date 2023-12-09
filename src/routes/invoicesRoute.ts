@@ -68,7 +68,7 @@ router.get("/invoice/file/:filename", async(req,res) =>{
         await mongoClient.connect()
         const database = mongoClient.db("test")
         const imageBucket = new GridFSBucket(database, {
-            bucketName: "qoutes",
+            bucketName: "invoices",
         })
 
         let downloadStream = imageBucket.openDownloadStreamByName(

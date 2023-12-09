@@ -124,7 +124,7 @@ router.get("/invoice/file/:filename", function (req, res) { return __awaiter(voi
                 _a.sent();
                 database = mongoClient.db("test");
                 imageBucket = new GridFSBucket(database, {
-                    bucketName: "qoutes",
+                    bucketName: "invoices",
                 });
                 downloadStream = imageBucket.openDownloadStreamByName(filename);
                 downloadStream.on("data", function (data) {
